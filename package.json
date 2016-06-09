@@ -3,6 +3,7 @@
   "author": "Johannes Neubrand",
   "version": "1.0.0",
   "files": ["dist.zip"],
+  "repo": "jneubrand/special-draw",
   "keywords": ["pebble-package"],
   "dependencies": {},
   "pebble": {
