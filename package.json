@@ -1,9 +1,9 @@
 {
   "name": "special-draw",
   "author": "Johannes Neubrand",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "files": ["dist.zip"],
-  "repo": "jneubrand/special-draw",
+  "repository": "jneubrand/special-draw",
   "keywords": ["pebble-package"],
   "dependencies": {},
   "pebble": {
