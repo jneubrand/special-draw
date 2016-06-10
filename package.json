@@ -2,6 +2,7 @@
   "name": "special-draw",
   "author": "Johannes Neubrand",
   "version": "1.0.2",
+  "license": "MIT",
   "files": [
     "dist.zip"
   ],
