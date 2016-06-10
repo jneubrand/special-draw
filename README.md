@@ -20,21 +20,34 @@ Usage is quite simple:
 
 1. Begin the special-draw procedure.
 2. Draw whatever primitives/text you'd like to.
-3. Change the rotation and opacity values.
+3. Add modifiers to achieve the desired effect.
 4. End the special-draw procedure.
 
-It should be noted that special-draw is a relatively cpu-heavy operation.
-For this reason, it's generally better to
+It should be noted that special-draw is a relatively
+cpu-heavy operation and takes about 24kb of memory.
+For this reason, it's generally better to use
+alternatives such as GPath when possible.
 
 ### Example
 
-    graphics_draw_rect(ctx, GRect(32, 54, 80, 60));
-    // Begin the session.
-    GSpecialSession * session = graphics_context_begin_special_draw(ctx);
-    // Set the opacity (using 2/3)
-    graphics_context_special_session_set_opacity(session, GOpacity2);
-    graphics_draw_rect(ctx, GRect(32, 54, 80, 60));
-    graphics_context_end_special_draw(session);
+```c
+graphics_draw_rect(ctx, GRect(32, 54, 80, 60));
+
+// Begin the session.
+GSpecialSession * session = graphics_context_begin_special_draw(ctx);
+
+graphics_draw_rect(ctx, GRect(42, 64, 80, 60));
+
+// Add modifiers as desired.
+graphics_context_special_session_add_modifier(session, graphics_special_draw_create_opacity_modifier(GOpacity2));
+graphics_context_special_session_add_modifier(session, graphics_special_draw_create_rotation_modifier(TRIG_MAX_ANGLE / 100));
+
+// End the session.
+graphics_context_end_special_draw(session);
+```
+
+The above code requires no further cleanup since special-draw instances are
+automatically destroyed after use.
 
 ### API
 
@@ -43,32 +56,54 @@ For this reason, it's generally better to
 `GSpecialSession * graphics_context_begin_special_draw(GContext * ctx)`
 
 >Begins a special-draw session. You must keep the returned pointer to the
-    `GSpecialSession` (it is used to end the session)
+    `GSpecialSession` as it is used to end the session.
 
 `void graphics_context_end_special_draw(GSpecialSession * session)`
 
->Ends this `GSpecialSession` and destroys the associated data structure.
-    You must call this exactly once for every special-draw session opened.
+>Ends this `GSpecialSession` and destroys the associated data structure,
+    including all modifiers.
+>You must call this exactly once for every special-draw session opened.
 
-#### Effects
+#### Modifier API
 
-`void graphics_context_special_session_set_rotation(
-        GSpecialSession * session, int32_t angle)`
+`void graphics_context_special_session_add_modifier(
+        GSpecialSession * session, GSpecialSessionModifier * modifier)`
 
-Default rotation: 0
+>Add a modifier to the internal list of modifiers.
 
->Sets the rotation used for the `GSpecialSession`. Expects a `TRIGANGLE`.
-    May be called any time between beginning and ending the session.
+>Note that there can only be one `draw`-type modifier, and
+>attempting to add more will replace (and destroy) the
+>previous one.
+>(currently, the only effect that requires a draw-type modifier is rotation.)
 
-`void graphics_context_special_session_set_opacity(
-        GSpecialSession * session, GOpacity opacity)`
+### Included Modifiers
 
-Default opacity: `GOpacity3`
+#### special-draw-rotation.h
 
->Sets the rotation used for the `GSpecialSession`. May be called any time between beginning and ending the session.
+`GSpecialSessionModifier * graphics_special_draw_create_rotation_modifier(
+    int32_t angle)`
 
-#### `enum`s
+>Creates a rotation modifier. This is a `draw`-type modifier.
 
+- Mixing a dithered opacity setting such as `GOpacity1_5`
+    with a rotation that is not a multiple of 90 degrees
+    will lead to weird interference.
+- Arbitrary center points for rotation are currently not
+    supported. (this is low-hanging fruit—feel free to submit
+    a pull request!)
+
+#### special-draw-opacity.h
+
+`GSpecialSessionModifier * graphics_special_draw_create_opacity_modifier(
+    GOpacity opacity);`
+
+>Not supported on Aplite.
+
+>Creates an opacity modifier. This is a normal-type modifier.
+
+Choose an opacity from this enum:
+
+```c
     typedef enum {
         GOpacity0,
         GOpacity0_5,
@@ -78,35 +113,82 @@ Default opacity: `GOpacity3`
         GOpacity2_5,
         GOpacity3
     } GOpacity;
+```
 
-0: completely invisible (somewhat pointless)
-3: fully visible (default)
+0: completely invisible (somewhat pointless) to 3: fully visible
 
-Intermediate stages lead to (checkerboard) dithered transparency. This may lead to disappearing diagonal lines.
+Intermediate stages lead to (checkerboarded) dithered
+transparency. This may lead to disappearing or
+dashed diagonal lines.
+
+### Making your own modifier
+
+Modifiers get full access to the GBitmap which
+primitives were rendered to, and draw-type modifiers
+also get access to the GContext (as they are supposed
+to draw the GBitmap to the GContext.)
+
+Modifiers are a struct, defined in special-draw.h, with the
+following structure:
+
+```c
+(GSpecialSessionModifier) {
+    bool overrides_draw;
+    union {
+        GSpecialSessionModifierCallback modifier_run;
+        GSpecialSessionModifierDrawCallback modifier_draw;
+    } action;
+    void * context;
+    GSpecialSessionModifierDestroyCallback destroy;
+}
+```
+
+A pointer to this structure should be passed to
+`graphics_context_special_session_add_modifier`.
+
+If `overrides_draw` is true, `modifier_draw` must be set.
+Otherwise, `modifier_run` must be set.
+
+This is a bare-bones modifier example:
+
+```c
+#include "special-draw-opacity.h"
+
+static void prv_run_modifier(GSpecialSessionModifier * modifier,
+        GBitmap * session_bitmap) {
+    // Insert bitmap manipulation code here.
+}
+
+static void prv_destroy_modifier(GSpecialSessionModifier * modifier) {
+    free(modifier->context);
+    free(modifier);
+}
+
+GSpecialSessionModifier * graphics_special_draw_create_pointless_modifier() {
+    GSpecialSessionModifier * mod = malloc(sizeof(GSpecialSessionModifier));
+    mod->overrides_draw = false;
+    mod->action.modifier_run = prv_run_modifier;
+    mod->destroy = prv_destroy_modifier;
+    mod->context = malloc(sizeof(uint8_t));
+    *((uint8_t *) mod->context) = 42;
+    return mod;
+}
+```
 
 Caveats
 -------
 
-- Nesting `GSpecialSession`s is not supported.
-    (reason unclear, research needed.)
-- Mixing a dithered opacity setting such as `GOpacity1_5` with rotation that is
-    not a multiple of 90 degrees will lead to weird interference
-    - Nesting `GSpecialSession`s, once supported, will resolve this.
+- Nesting `GSpecialSession`s is not supported and probably
+    won't be due to the high memory requirements.
 - Settings apply to the entire `GSpecialSession`, not just
     the part drawn after they are applied.
-- Arbitrary center points for rotation are currently not supported.
-
-Ideally, most of these issues could be solved by moving from the
-    current design to a system in which arbitrary effects can be
-    defined and added, and are applied in order after drawing is
-    completed.
 
 Thanks
 ------
 
 ...to @mhungerford for creating
     [pebble_offscreen_rendering_text_demo](https://github.com/mhungerford/pebble_offscreen_rendering_text_demo),
-    which displays the concept behind offscreen rendering on Pebble.
+which shows the concept behind offscreen rendering on Pebble.
 
 Licensing information
 ---------------------
