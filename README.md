@@ -64,6 +64,17 @@ automatically destroyed after use.
     including all modifiers.
 >You must call this exactly once for every special-draw session opened.
 
+`void graphics_context_special_session_set_compositing_mode(GSpecialSession * session, GCompOp compositing_mode)`
+
+>Change the compositing mode used by the default draw
+    implementation. This may not be honored by custom draw
+    modifiers. Defaults are `GCompOpSet` for color and
+    `GCompOpAnd` for B/W screens.
+
+>This is usually not necessary for color screens. See **Caveats**
+    below for more information on compositing modes for B/W
+    screens.
+
 #### Modifier API
 
 `void graphics_context_special_session_add_modifier(
@@ -182,6 +193,13 @@ Caveats
     won't be due to the high memory requirements.
 - Settings apply to the entire `GSpecialSession`, not just
     the part drawn after they are applied.
+- Since the B/W framebuffer does not natively support
+    transparency, it it **not** possible to draw a mixed
+    black-and-white image on B/W screens using this library.
+    The created framebuffer is completely filled with black
+    on these platforms, and you may want to use
+    `graphics_fill_rect` to fill it with white for certain
+    `GCompOp`s.
 
 Thanks
 ------
