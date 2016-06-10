@@ -75,6 +75,8 @@ automatically destroyed after use.
     below for more information on compositing modes for B/W
     screens.
 
+>Default for B/W: `GCompOpClear`, Default for 6+2-bit color: `GCompOpSet`
+
 #### Modifier API
 
 `void graphics_context_special_session_add_modifier(
@@ -196,10 +198,13 @@ Caveats
 - Since the B/W framebuffer does not natively support
     transparency, it it **not** possible to draw a mixed
     black-and-white image on B/W screens using this library.
-    The created framebuffer is completely filled with black
+    - The created framebuffer is completely filled with black
     on these platforms, and you may want to use
     `graphics_fill_rect` to fill it with white for certain
     `GCompOp`s.
+    - `GCompOpClear` (the default), for example, lets you draw in 
+    white and [effectively] maps black -> transparent and
+    white -> black.
 
 Thanks
 ------
