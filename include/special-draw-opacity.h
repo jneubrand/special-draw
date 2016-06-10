@@ -3,6 +3,7 @@
 #include <@smallstoneapps/linked-list/linked-list.h>
 #include "special-draw.h"
 
+#ifndef PBL_APLITE
 typedef enum {
     GOpacity0   = 0b000,
     GOpacity0_5 = 0b001,
@@ -15,3 +16,4 @@ typedef enum {
 
 GSpecialSessionModifier * graphics_special_draw_create_opacity_modifier(
     GOpacity opacity);
+#endif

@@ -1,5 +1,6 @@
 #include "special-draw-opacity.h"
 
+#ifndef PBL_APLITE
 static void prv_set_bitmap_opacity(GBitmap * bitmap, GOpacity opacity) {
     GRect bounds = gbitmap_get_bounds(bitmap);
     uint8_t alpha_1 = opacity >> 1;
@@ -40,3 +41,4 @@ GSpecialSessionModifier * graphics_special_draw_create_opacity_modifier(
     *((GOpacity *) mod->context) = opacity;
     return mod;
 }
+#endif
