@@ -2,10 +2,16 @@
   "name": "special-draw",
   "author": "Johannes Neubrand",
   "version": "1.0.2",
-  "files": ["dist.zip"],
+  "files": [
+    "dist.zip"
+  ],
   "repository": "jneubrand/special-draw",
-  "keywords": ["pebble-package"],
-  "dependencies": {},
+  "keywords": [
+    "pebble-package"
+  ],
+  "dependencies": {
+    "@smallstoneapps/linked-list": "^1.2.2"
+  },
   "pebble": {
     "projectType": "package",
     "sdkVersion": "3",

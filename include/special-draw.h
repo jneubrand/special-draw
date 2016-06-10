@@ -1,32 +1,43 @@
 #pragma once
+#include <pebble.h>
+#include <@smallstoneapps/linked-list/linked-list.h>
 
-typedef enum {
-    GOpacity0   = 0b000,
-    GOpacity0_5 = 0b001,
-    GOpacity1   = 0b010,
-    GOpacity1_5 = 0b011,
-    GOpacity2   = 0b100,
-    GOpacity2_5 = 0b101,
-    GOpacity3   = 0b110
-} GOpacity;
+struct _GSpecialSessionModifier;
+
+typedef void (* GSpecialSessionModifierCallback)(
+        struct _GSpecialSessionModifier * modifier, GBitmap * session_bitmap);
+typedef void (* GSpecialSessionModifierDrawCallback)(
+        GContext * ctx, struct _GSpecialSessionModifier * modifier,
+        GBitmap * session_bitmap);
+typedef void (* GSpecialSessionModifierDestroyCallback)(
+        struct _GSpecialSessionModifier * modifier);
+
+typedef struct _GSpecialSessionModifier {
+    bool overrides_draw;
+    union {
+        GSpecialSessionModifierCallback modifier_run;
+            // ^^ valid if overrides_draw is false
+        GSpecialSessionModifierDrawCallback modifier_draw;
+            // ^^ valid if overrides_draw is true
+    } action;
+    void * context;
+    GSpecialSessionModifierDestroyCallback destroy;
+} GSpecialSessionModifier;
 
 typedef struct {
-    int32_t angle;
-    uint16_t old_row_size;
-    GBitmapFormat old_format;
-    GOpacity opacity;
     GBitmap * old_fbuf;
     GBitmap * new_fbuf;
     uint8_t * initial_data;
     GContext * ctx;
+    GSpecialSessionModifier * draw_modifier;
+    LinkedRoot * modifier_root;
+    GBitmapFormat old_format;
+    uint16_t old_row_size;
 } GSpecialSession;
 
 GSpecialSession * graphics_context_begin_special_draw(GContext * ctx);
 
 void graphics_context_end_special_draw(GSpecialSession * session);
 
-void graphics_context_special_session_set_rotation(
-        GSpecialSession * session, int32_t angle);
-
-void graphics_context_special_session_set_opacity(
-        GSpecialSession * session, GOpacity opacity);
+void graphics_context_special_session_add_modifier(
+        GSpecialSession * session, GSpecialSessionModifier * modifier);

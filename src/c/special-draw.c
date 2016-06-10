@@ -1,4 +1,3 @@
-#include <pebble.h>
 #include "special-draw.h"
 
 #if defined(PBL_RECT) && !defined(SPECIAL_DRAW_SCREEN_SIZE)
@@ -7,17 +6,10 @@
 #define SPECIAL_DRAW_SCREEN_SIZE (GSize(180, 180))
 #endif
 
-#if defined(PBL_RECT) && !defined(SPECIAL_DRAW_SCREEN_CENTER)
-#define SPECIAL_DRAW_SCREEN_CENTER (GPoint(72, 84))
-#elif defined(PBL_ROUND) && !defined(SPECIAL_DRAW_SCREEN_CENTER)
-#define SPECIAL_DRAW_SCREEN_CENTER (GPoint(90, 90))
-#endif
-
 GSpecialSession * graphics_context_begin_special_draw(GContext * ctx) {
     GSpecialSession * session = malloc(sizeof(GSpecialSession));
     // Defaults
-    session->angle = 0;
-    session->opacity = GOpacity3;
+    session->modifier_root = linked_list_create_root();
     // Initialize
     session->ctx = ctx;
     session->old_fbuf = graphics_capture_frame_buffer(session->ctx);
@@ -34,51 +26,56 @@ GSpecialSession * graphics_context_begin_special_draw(GContext * ctx) {
     return session;
 }
 
-static void set_bitmap_opacity(GBitmap * bitmap, GOpacity opacity) {
-    GRect bounds = gbitmap_get_bounds(bitmap);
-    uint8_t alpha_1 = opacity >> 1;
-    uint8_t alpha_2 = (opacity + 1) >> 1;
-    if (alpha_1 >= 3) {
-        // Save some time if the bitmap isn't actually supposed to be
-        // semi-transparent. You may want to remove this if reusing this code.
-        return;
-    }
-    for (int y = bounds.origin.y; y < bounds.origin.y + bounds.size.h; y++) {
-        GBitmapDataRowInfo row_info = gbitmap_get_data_row_info(bitmap, y);
-        for (int x = row_info.min_x; x < row_info.max_x; x++) {
-            GColor * pixel = (GColor *) &row_info.data[x];
-            if (pixel->a == 0b11) {
-                pixel->a = ((x + y) % 2) ? alpha_1 : alpha_2;
-            }
-        }
-    }
+static bool prv_apply_modifier(void * _modifier,
+        void * _session) {
+    GSpecialSessionModifier * modifier = _modifier;
+    GSpecialSession * session = _session;
+    modifier->action.modifier_run(modifier, session->new_fbuf);
+    APP_LOG(APP_LOG_LEVEL_DEBUG_VERBOSE, "applied linked list item %p",
+            modifier);
+    return true;
+}
+
+static bool prv_destroy_modifier(void * _modifier,
+        void * _session) {
+    GSpecialSessionModifier * modifier = _modifier;
+    modifier->destroy(modifier);
+    APP_LOG(APP_LOG_LEVEL_DEBUG_VERBOSE, "destroyed linked list item %p",
+            modifier);
+    return true;
 }
 
 void graphics_context_end_special_draw(GSpecialSession * session) {
     gbitmap_set_data(session->old_fbuf, session->initial_data,
                      session->old_format, session->old_row_size, false);
-    set_bitmap_opacity(session->new_fbuf, session->opacity);
     graphics_context_set_compositing_mode(session->ctx, GCompOpSet);
-    if (session->angle) {
-        graphics_draw_rotated_bitmap(session->ctx, session->new_fbuf,
-            SPECIAL_DRAW_SCREEN_CENTER, session->angle,
-            SPECIAL_DRAW_SCREEN_CENTER);
+    linked_list_foreach(session->modifier_root, prv_apply_modifier, session);
+    if (session->draw_modifier) {
+        session->draw_modifier->action.modifier_draw(
+            session->ctx, session->draw_modifier, session->new_fbuf);
+        session->draw_modifier->destroy(session->draw_modifier);
     } else {
         graphics_draw_bitmap_in_rect(session->ctx, session->new_fbuf,
             (GRect) {GPointZero, SPECIAL_DRAW_SCREEN_SIZE});
     }
+    linked_list_foreach(session->modifier_root, prv_destroy_modifier, session);
+    linked_list_clear(session->modifier_root);
+    free(session->modifier_root);
     gbitmap_destroy(session->new_fbuf);
     free(session);
 }
 
-void graphics_context_special_session_set_rotation(
-        GSpecialSession * session, int32_t angle) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "session ptr %p", &session);
-    session->angle = angle;
-}
-
-void graphics_context_special_session_set_opacity(
-        GSpecialSession * session, GOpacity opacity) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "session ptr %p", &session);
-    session->opacity = opacity;
+void graphics_context_special_session_add_modifier(GSpecialSession * session,
+        GSpecialSessionModifier * modifier) {
+    if (modifier->overrides_draw) {
+        if (session->draw_modifier) {
+            APP_LOG(APP_LOG_LEVEL_WARNING, "Replacing previous draw modifier"
+                "%p with new modifier %p. Destroying previous draw modifier.",
+                session->draw_modifier, modifier);
+            session->draw_modifier->destroy(session->draw_modifier);
+        }
+        session->draw_modifier = modifier;
+    } else {
+        linked_list_append(session->modifier_root, modifier);
+    }
 }
