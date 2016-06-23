@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="http://localhost:35729/livereload.js"></script>
+        <link rel="stylesheet" href="styles.css" charset="utf-8"/>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat"
+            rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro"
+            rel="stylesheet"/>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/solarized-dark.min.css"
+            rel="stylesheet"/>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+        <title>special-draw</title>
+    </head>
+    <body>
+        <div id="shapes-effect">
+            <span></span><span></span><span></span>
+        </div>
+        <main>
+            <section>
+                <h1>
+                    special-draw
+                </h1>
+            </section>
+            <section>
+                <p>
+                    special-draw is a very simple way to implement advanced
+                    graphical effects in your
+                    <a href="https://pebble.com">Pebble</a> apps.
+                    Some examples of possible modifiers are:
+                </p>
+            </section>
+            <section id="tiled-list">
+                <a href="https://github.com/jneubrand/special-draw">
+                    Rotation</a>
+                <a href="https://github.com/jneubrand/special-draw">
+                    Transparency</a>
+                <a href="https://github.com/robisodd/special-draw-dither">
+                    Dithering</a>
+                <a>Mirroring&nbsp;<small>[coming soon]</small></a>
+                <a>Opacity Masks&nbsp;<small>[coming soon]</small></a>
+                <a>Gradients&nbsp;<small>[coming soon]</small></a>
+            </section>
+            <section>
+                <h2>
+                    Usage example
+                </h2>
+                <pre><code class="c++">static void layer_update_proc(Layer *layer, GContext *ctx) {
+    graphics_draw_rect(ctx, GRect(32, 54, 80, 60));
+    GSpecialSession * session =
+        graphics_context_begin_special_draw(ctx);
+    graphics_context_set_stroke_color(ctx, GColorBlack);
+​
+    graphics_draw_rect(ctx, GRect(38, 60, 80, 60));
+​
+    graphics_context_special_session_add_modifier(session,
+        graphics_special_draw_create_opacity_modifier(GOpacity2));
+    graphics_context_special_session_add_modifier(session,
+        graphics_special_draw_create_rotation_modifier(TRIG_MAX_ANGLE/8));
+​
+    graphics_context_end_special_draw(session);
+}</code></pre>
+            </section>
+            <section>
+                <h2>
+                    Philosophy
+                </h2>
+                <ul>
+                    <li>
+                        <code>special-draw</code> should let you draw anything.
+                    </li>
+                    <li>
+                        <code>special-draw</code> should be easy to extend.
+                    </li>
+                    <li>
+                        <code>special-draw</code> should let you chain
+                        modifiers.
+                    </li>
+                </ul>
+            </section>
+            <section>
+                <p>
+                    special-draw is an MIT-licensed package for Pebble.
+                    Modifiers can also be installed as packages, and
+                    there is a very simple API that lets you implement
+                    custom modifiers. For more information about the app
+                    and modifier APIs, see the
+                    <a href="https://github.com/jneubrand/special-draw/blob/master/README.md">README.</a>
+                </p>
+            </section>
+        </main>
+    </body>
+</html>

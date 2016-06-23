@@ -1,0 +1,156 @@
+html {
+    min-height: 100%;
+}
+
+body {
+    background-color: #FFF;
+    min-height: calc(100vh - 5em);
+    max-width: 100vw;
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    font-family: "Helvetica Neue", Helvetica, Ubuntu, Arial, sans-serif;
+}
+
+main {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 35em;
+    min-height: calc(100vh - 5em - 1px);
+    background-color: #fff;
+    margin-top: 5em;
+}
+
+/* ---- Layout ---- */
+
+main {
+    position: relative;
+    z-index: 1;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-top-left-radius: 0.5em;
+    border-top-right-radius: 0.5em;
+}
+
+main section:not(:last-child) {
+    border-bottom: 1px solid #ddd;
+}
+
+main section {
+    padding: 0.001em 1.5em;
+}
+
+main h1, main h2, main h3 {
+    font-family: Montserrat, Helvetica, Ubuntu, Arial, sans-serif;
+    font-weight: 400;
+    padding: 0em 0;
+    margin: 0.8em 0 0.5em;
+}
+
+main h1 {
+    margin: 0.7em 0;
+    font-size: 2em;
+}
+
+main p {
+    margin: 1.2em 0;
+}
+
+main pre {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    margin-bottom: 2em;
+}
+
+main ul {
+    padding-left: 1em;
+}
+
+main ul li {
+    margin: 0.2em 0;
+}
+
+code.hljs {
+    font-family: "Source Code Pro", monospace;
+    font-size: 11px;
+    line-height: 14px;
+    padding: 1em;
+    border-radius: 1em;
+}
+
+code:not(.hljs) {
+    background: #eee;
+    padding: 0.2em;
+    border-radius: 0.2em;
+    vertical-align: middle;
+}
+
+/* ---- Tiled list ---- */
+
+#tiled-list {
+    padding: 1em;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+#tiled-list a {
+    border: 1px solid #ddd;
+    border-radius: 0.5em;
+    flex-basis: 34%;
+    flex-grow: 1;
+    padding: 1em;
+    margin: 0.5em 0.5em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #888;
+    transition: color 0.1s linear;
+}
+
+#tiled-list a:hover {
+    color: #000;
+}
+
+/* ---- Eyecandy ---- */
+
+#shapes-effect {
+    position: absolute;
+    top: 1em;
+    left: calc(50vw + 4em);
+    height: 1em;
+    width: 1em;
+    display: block;
+    overflow: visible;
+}
+
+#shapes-effect span {
+    display: inline-block;
+    font-size: 2em;
+    width: 5em;
+    height: 5em;
+    opacity: 0.8;
+    mix-blend-mode: darken;
+    position: absolute;
+}
+
+#shapes-effect span:nth-child(1) {
+    background: linear-gradient(to bottom,
+        rgb(214, 30, 25), rgb(100, 20, 189));
+    border-radius: 50%;
+    transform: translate(-2em, 0);
+}
+
+#shapes-effect span:nth-child(2) {
+    background: linear-gradient(to bottom,
+        rgb(210, 192, 32), rgb(48, 212, 15));
+    transform: translate(1em, -2em) rotate(-10deg);
+}
+
+#shapes-effect span:nth-child(3) {
+    background: linear-gradient(to bottom,
+        rgb(52, 107, 210), rgb(183, 49, 230));
+    transform: translate(4em, 0) rotate(20deg);
+}
