@@ -33,12 +33,31 @@ main {
     border-top-right-radius: 0.5em;
 }
 
-main section:not(:last-child) {
+main section {
     border-bottom: 1px solid #ddd;
+    padding: 0.001em 1.5em;
 }
 
-main section {
-    padding: 0.001em 1.5em;
+main footer {
+    margin: 1.5em;
+    display: flex;
+    align-items: center;
+}
+
+main footer img {
+    border-radius: 5px;
+    height: 24px;
+    margin-right: 15px;
+}
+
+main footer i.fa {
+    color: #222;
+}
+
+main footer > * {
+    color: #222;
+    text-decoration: none;
+    margin-right: 10px;
 }
 
 main h1, main h2, main h3 {
@@ -57,18 +76,27 @@ main p {
     margin: 1.2em 0;
 }
 
-main pre {
-    overflow-x: scroll;
-    overflow-y: hidden;
-    margin-bottom: 2em;
-}
-
 main ul {
     padding-left: 1em;
 }
 
 main ul li {
     margin: 0.2em 0;
+}
+
+a i.fa {
+    color: #888;
+    vertical-align: -5%;
+}
+
+h1 a {
+    float: right;
+}
+
+main pre {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    margin-bottom: 2em;
 }
 
 code.hljs {
