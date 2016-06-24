@@ -7,7 +7,7 @@ body {
     min-height: calc(100vh - 5em);
     max-width: 100vw;
     overflow-x: hidden;
-    padding: 0;
+    padding: 0 1em;
     margin: 0;
     font-family: "Helvetica Neue", Helvetica, Ubuntu, Arial, sans-serif;
 }
@@ -20,11 +20,6 @@ main {
     min-height: calc(100vh - 5em - 1px);
     background-color: #fff;
     margin-top: 5em;
-}
-
-/* ---- Layout ---- */
-
-main {
     position: relative;
     z-index: 1;
     border: 1px solid #ddd;
@@ -148,11 +143,18 @@ code:not(.hljs) {
 #shapes-effect {
     position: absolute;
     top: 1em;
-    left: calc(50vw + 4em);
+    left: calc(50vw + 58px);
     height: 1em;
     width: 1em;
     display: block;
     overflow: visible;
+}
+
+@media (max-width: 800px) {
+    #shapes-effect {
+        font-size: 2vw;
+        top: calc(2rem - 1em);
+    }
 }
 
 #shapes-effect span {
