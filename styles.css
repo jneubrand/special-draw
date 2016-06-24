@@ -68,6 +68,12 @@ main h1 {
     font-size: 2em;
 }
 
+@media (max-width: 600px) {
+    main h1 {
+        font-size: 1.6em;
+    }
+}
+
 main p {
     margin: 1.2em 0;
 }
@@ -132,6 +138,12 @@ code:not(.hljs) {
     text-decoration: none;
     color: #888;
     transition: color 0.1s linear;
+}
+
+@media (max-width: 600px) {
+    #tiled-list a {
+        flex-basis: 51%;
+    }
 }
 
 #tiled-list a:hover {
