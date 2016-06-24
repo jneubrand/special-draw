@@ -154,6 +154,7 @@ code:not(.hljs) {
     #shapes-effect {
         font-size: 2vw;
         top: calc(2rem - 1em);
+        left: calc(50vw + 58px - 3 * (1rem - 1em));
     }
 }
 
