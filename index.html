@@ -54,18 +54,25 @@
                     Usage example
                 </h2>
                 <pre><code class="c++">static void layer_update_proc(Layer *layer, GContext *ctx) {
+    // Draw a rect normally.
     graphics_draw_rect(ctx, GRect(32, 54, 80, 60));
+
+    // Begin a special-draw session.
     GSpecialSession * session =
         graphics_context_begin_special_draw(ctx);
-    graphics_context_set_stroke_color(ctx, GColorBlack);
-​
-    graphics_draw_rect(ctx, GRect(38, 60, 80, 60));
-​
+
+    // Add an opacity modifier...
     graphics_context_special_session_add_modifier(session,
         graphics_special_draw_create_opacity_modifier(GOpacity2));
+    // ...and a rotation modifier.
     graphics_context_special_session_add_modifier(session,
         graphics_special_draw_create_rotation_modifier(TRIG_MAX_ANGLE/8));
 ​
+    // Draw a rectangle. This one will be affected by
+    //     the special-draw modifiers, the previous one won't.
+    graphics_draw_rect(ctx, GRect(38, 60, 80, 60));
+​
+​    // We're done here.
     graphics_context_end_special_draw(session);
 }</code></pre>
             </section>
